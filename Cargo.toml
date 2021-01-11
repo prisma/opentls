@@ -1,0 +1,27 @@
+[package]
+name = "opentls"
+version = "0.1.0"
+authors = ["Julius de Bruijn <julius+gpg@nauk.io>"]
+edition = "2018"
+license = "MIT/Apache-2.0"
+repository = "https://github.com/prisma/opentls/"
+homepage = "https://docs.rs/crate/opentls/"
+documentation = "https://docs.rs/crate/opentls/"
+description = """
+TLS connections with OpenSSL.
+"""
+readme = "README.md"
+categories = ["asynchronous", "cryptography", "network-programming"]
+
+[features]
+default = []
+vendored = ["openssl/vendored"]
+
+[dependencies]
+log = "0.4.5"
+openssl = "0.10.29"
+openssl-sys = "0.9.55"
+openssl-probe = "0.1"
+
+[dev-dependencies]
+hex = "0.4.2"
