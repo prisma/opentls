@@ -5,16 +5,16 @@ use std::io;
 pub use builder::TlsAcceptorBuilder;
 use openssl::ssl::SslAcceptor;
 
-use crate::{HandshakeError, Identity, Protocol, TlsStream};
+use crate::{sync::TlsStream, HandshakeError, Identity, Protocol};
 
 /// A builder for server-side TLS connections.
 ///
 /// # Examples
 ///
 /// ```rust,no_run
-/// use opentls::{Identity, TlsAcceptor, TlsStream};
+/// use opentls::{Identity, sync::{TlsAcceptor, TlsStream}};
 /// use std::fs::File;
-/// use std::io::{Read};
+/// use std::io::Read;
 /// use std::net::{TcpListener, TcpStream};
 /// use std::sync::Arc;
 /// use std::thread;

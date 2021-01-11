@@ -1,4 +1,7 @@
-use opentls::{Identity, TlsAcceptor, TlsStream};
+use opentls::{
+    sync::{TlsAcceptor, TlsStream},
+    Identity,
+};
 use std::{
     fs::File,
     io::Read,

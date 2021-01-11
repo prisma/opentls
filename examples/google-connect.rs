@@ -1,4 +1,4 @@
-use opentls::TlsConnector;
+use opentls::sync::TlsConnector;
 use std::{
     io::{Read, Write},
     net::TcpStream,

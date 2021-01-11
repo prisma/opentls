@@ -3,7 +3,7 @@ use openssl::{
     x509::store::X509StoreBuilder,
 };
 
-use crate::{supported_protocols, Certificate, Identity, Protocol, TlsConnector};
+use crate::{supported_protocols, sync::TlsConnector, Certificate, Identity, Protocol};
 
 /// A builder for `TlsConnector`s.
 pub struct TlsConnectorBuilder {

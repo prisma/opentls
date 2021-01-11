@@ -1,6 +1,6 @@
 use openssl::ssl::{SslAcceptor, SslMethod};
 
-use crate::{Identity, Protocol, TlsAcceptor};
+use super::{Identity, Protocol, TlsAcceptor};
 
 /// A builder for `TlsAcceptor`s.
 pub struct TlsAcceptorBuilder {

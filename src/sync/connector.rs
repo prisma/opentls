@@ -5,14 +5,14 @@ use std::{fmt, io, sync::Once};
 pub use builder::TlsConnectorBuilder;
 use openssl::ssl::{SslConnector, SslVerifyMode};
 
-use crate::{HandshakeError, Protocol, TlsStream};
+use crate::{sync::TlsStream, HandshakeError, Protocol};
 
 /// A builder for client-side TLS connections.
 ///
 /// # Examples
 ///
 /// ```rust
-/// use opentls::TlsConnector;
+/// use opentls::sync::TlsConnector;
 /// use std::io::{Read, Write};
 /// use std::net::TcpStream;
 ///

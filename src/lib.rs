@@ -1,24 +1,18 @@
-mod acceptor;
-mod certificate;
-mod connector;
-mod error;
-mod identity;
-mod stream;
-
-#[cfg(test)]
-mod test;
-
-pub use acceptor::{TlsAcceptor, TlsAcceptorBuilder};
-pub use certificate::Certificate;
-pub use connector::{TlsConnector, TlsConnectorBuilder};
-pub use error::{Error, HandshakeError};
-pub use identity::Identity;
-use openssl::{error::ErrorStack, ssl::SslContextBuilder};
-use std::result;
-pub use stream::TlsStream;
-
 #[macro_use]
 extern crate log;
+
+pub mod sync;
+
+mod certificate;
+mod error;
+mod identity;
+
+pub use certificate::Certificate;
+pub use error::{Error, HandshakeError};
+pub use identity::Identity;
+
+use openssl::{error::ErrorStack, ssl::SslContextBuilder};
+use std::result;
 
 /// A typedef of the result-type returned by many methods.
 pub type Result<T> = result::Result<T, Error>;
@@ -41,45 +35,6 @@ pub enum Protocol {
     Tlsv12,
     #[doc(hidden)]
     __NonExhaustive,
-}
-
-fn _check_kinds() {
-    use std::net::TcpStream;
-
-    fn is_sync<T: Sync>() {}
-    fn is_send<T: Send>() {}
-    is_sync::<Error>();
-    is_send::<Error>();
-    is_sync::<TlsConnectorBuilder>();
-    is_send::<TlsConnectorBuilder>();
-    is_sync::<TlsConnector>();
-    is_send::<TlsConnector>();
-    is_sync::<TlsAcceptorBuilder>();
-    is_send::<TlsAcceptorBuilder>();
-    is_sync::<TlsAcceptor>();
-    is_send::<TlsAcceptor>();
-    is_sync::<TlsStream<TcpStream>>();
-    is_send::<TlsStream<TcpStream>>();
-}
-
-#[cfg(target_os = "android")]
-fn load_android_root_certs(connector: &mut SslContextBuilder) -> crate::Result<()> {
-    use openssl::x509::X509;
-    use std::fs;
-
-    if let Ok(dir) = fs::read_dir("/system/etc/security/cacerts") {
-        let certs = dir
-            .filter_map(|r| r.ok())
-            .filter_map(|e| fs::read(e.path()).ok())
-            .filter_map(|b| X509::from_pem(&b).ok());
-        for cert in certs {
-            if let Err(err) = connector.cert_store_mut().add_cert(cert) {
-                debug!("load_android_root_certs error: {:?}", err);
-            }
-        }
-    }
-
-    Ok(())
 }
 
 #[cfg(have_min_max_version)]
@@ -126,14 +81,9 @@ fn supported_protocols(
         None => SslOptions::empty(),
         Some(Protocol::Sslv3) => SslOptions::NO_SSLV2,
         Some(Protocol::Tlsv10) => SslOptions::NO_SSLV2 | SslOptions::NO_SSLV3,
-        Some(Protocol::Tlsv11) => {
-            SslOptions::NO_SSLV2 | SslOptions::NO_SSLV3 | SslOptions::NO_TLSV1
-        }
+        Some(Protocol::Tlsv11) => SslOptions::NO_SSLV2 | SslOptions::NO_SSLV3 | SslOptions::NO_TLSV1,
         Some(Protocol::Tlsv12) => {
-            SslOptions::NO_SSLV2
-                | SslOptions::NO_SSLV3
-                | SslOptions::NO_TLSV1
-                | SslOptions::NO_TLSV1_1
+            SslOptions::NO_SSLV2 | SslOptions::NO_SSLV3 | SslOptions::NO_TLSV1 | SslOptions::NO_TLSV1_1
         }
         Some(Protocol::__NonExhaustive) => unreachable!(),
     };
@@ -141,9 +91,7 @@ fn supported_protocols(
         None | Some(Protocol::Tlsv12) => SslOptions::empty(),
         Some(Protocol::Tlsv11) => SslOptions::NO_TLSV1_2,
         Some(Protocol::Tlsv10) => SslOptions::NO_TLSV1_1 | SslOptions::NO_TLSV1_2,
-        Some(Protocol::Sslv3) => {
-            SslOptions::NO_TLSV1 | SslOptions::NO_TLSV1_1 | SslOptions::NO_TLSV1_2
-        }
+        Some(Protocol::Sslv3) => SslOptions::NO_TLSV1 | SslOptions::NO_TLSV1_1 | SslOptions::NO_TLSV1_2,
         Some(Protocol::__NonExhaustive) => unreachable!(),
     };
 
