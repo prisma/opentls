@@ -1,10 +1,15 @@
 use openssl::{error::ErrorStack, ssl, x509::X509VerifyResult};
-use std::{error, fmt};
+use std::{error, fmt, io};
 
+/// An error returned from the TLS implementation.
 #[derive(Debug)]
 pub enum Error {
+    /// Collection of [`Error`]s from OpenSSL.
     Normal(ErrorStack),
+    /// An SSL error.
     Ssl(ssl::Error, X509VerifyResult),
+    /// An I/O error.
+    Io(io::Error),
 }
 
 impl error::Error for Error {
@@ -12,14 +17,16 @@ impl error::Error for Error {
         match *self {
             Error::Normal(ref e) => error::Error::source(e),
             Error::Ssl(ref e, _) => error::Error::source(e),
+            Error::Io(ref e) => error::Error::source(e),
         }
     }
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             Error::Normal(ref e) => fmt::Display::fmt(e, fmt),
+            Error::Io(ref e) => fmt::Display::fmt(e, fmt),
             Error::Ssl(ref e, X509VerifyResult::OK) => fmt::Display::fmt(e, fmt),
             Error::Ssl(ref e, v) => write!(fmt, "{} ({})", e, v),
         }
@@ -32,6 +39,13 @@ impl From<ErrorStack> for Error {
     }
 }
 
+impl From<io::Error> for Error {
+    fn from(inner: io::Error) -> Self {
+        Self::Io(inner)
+    }
+}
+
+/// An error returned from `ClientBuilder::handshake`.
 #[derive(Debug)]
 pub enum HandshakeError<S> {
     /// A fatal error.

@@ -2,33 +2,42 @@ use crate::Certificate;
 use openssl::{hash::MessageDigest, nid::Nid, ssl};
 use std::{fmt, io};
 
+/// A stream managing a TLS session.
 pub struct TlsStream<S>(pub(crate) ssl::SslStream<S>);
 
 impl<S: fmt::Debug> fmt::Debug for TlsStream<S> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Debug::fmt(&self.0, fmt)
     }
 }
 
 impl<S> TlsStream<S> {
+    /// Returns a shared reference to the inner stream.
     pub fn get_ref(&self) -> &S {
         self.0.get_ref()
     }
 
+    /// Returns a mutable reference to the inner stream.
     pub fn get_mut(&mut self) -> &mut S {
         self.0.get_mut()
     }
 }
 
 impl<S: io::Read + io::Write> TlsStream<S> {
+    /// Returns the number of bytes that can be read without resulting in any
+    /// network calls.
     pub fn buffered_read_size(&self) -> crate::Result<usize> {
         Ok(self.0.ssl().pending())
     }
 
+    /// Returns the peer's leaf certificate, if available.
     pub fn peer_certificate(&self) -> crate::Result<Option<Certificate>> {
         Ok(self.0.ssl().peer_certificate().map(Certificate::from))
     }
 
+    /// Returns the tls-server-end-point channel binding data as defined in [RFC 5929].
+    ///
+    /// [RFC 5929]: https://tools.ietf.org/html/rfc5929
     pub fn tls_server_end_point(&self) -> crate::Result<Option<Vec<u8>>> {
         let cert = if self.0.ssl().is_server() {
             self.0.ssl().certificate().map(|x| x.to_owned())
@@ -60,6 +69,7 @@ impl<S: io::Read + io::Write> TlsStream<S> {
         Ok(Some(digest.to_vec()))
     }
 
+    /// Shuts down the TLS session.
     pub fn shutdown(&mut self) -> io::Result<()> {
         match self.0.shutdown() {
             Ok(_) => Ok(()),

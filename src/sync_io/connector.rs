@@ -5,14 +5,14 @@ use std::{fmt, io, sync::Once};
 pub use builder::TlsConnectorBuilder;
 use openssl::ssl::{SslConnector, SslVerifyMode};
 
-use crate::{sync::TlsStream, HandshakeError, Protocol};
+use crate::{sync_io::TlsStream, HandshakeError, Protocol};
 
 /// A builder for client-side TLS connections.
 ///
 /// # Examples
 ///
 /// ```rust
-/// use opentls::sync::TlsConnector;
+/// use opentls::sync_io::TlsConnector;
 /// use std::io::{Read, Write};
 /// use std::net::TcpStream;
 ///
@@ -35,7 +35,7 @@ pub struct TlsConnector {
 }
 
 impl fmt::Debug for TlsConnector {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct("TlsConnector")
             // n.b. SslConnector is a newtype on SslContext which implements a noop Debug so it's omitted
             .field("use_sni", &self.use_sni)

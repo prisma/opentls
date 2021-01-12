@@ -1,18 +1,18 @@
 mod builder;
 
-use std::io;
+use std::{fmt, io};
 
 pub use builder::TlsAcceptorBuilder;
 use openssl::ssl::SslAcceptor;
 
-use crate::{sync::TlsStream, HandshakeError, Identity, Protocol};
+use crate::{sync_io::TlsStream, HandshakeError, Identity, Protocol};
 
 /// A builder for server-side TLS connections.
 ///
 /// # Examples
 ///
 /// ```rust,no_run
-/// use opentls::{Identity, sync::{TlsAcceptor, TlsStream}};
+/// use opentls::{Identity, sync_io::{TlsAcceptor, TlsStream}};
 /// use std::fs::File;
 /// use std::io::Read;
 /// use std::net::{TcpListener, TcpStream};
@@ -48,6 +48,12 @@ use crate::{sync::TlsStream, HandshakeError, Identity, Protocol};
 #[derive(Clone)]
 pub struct TlsAcceptor(pub(crate) SslAcceptor);
 
+impl fmt::Debug for TlsAcceptor {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("TlsAcceptor").finish()
+    }
+}
+
 impl TlsAcceptor {
     /// Creates a acceptor with default settings.
     ///
@@ -67,6 +73,12 @@ impl TlsAcceptor {
         }
     }
 
+    /// Initiates a TLS handshake.
+    ///
+    /// If the socket is nonblocking and a `WouldBlock` error is returned during
+    /// the handshake, a `HandshakeError::WouldBlock` error will be returned
+    /// which can be used to restart the handshake when the socket is ready
+    /// again.
     pub fn accept<S>(&self, stream: S) -> Result<TlsStream<S>, HandshakeError<S>>
     where
         S: io::Read + io::Write,

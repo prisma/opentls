@@ -1,8 +1,8 @@
+use super::{Identity, Protocol, TlsAcceptor};
 use openssl::ssl::{SslAcceptor, SslMethod};
 
-use super::{Identity, Protocol, TlsAcceptor};
-
 /// A builder for `TlsAcceptor`s.
+#[derive(Debug)]
 pub struct TlsAcceptorBuilder {
     pub(crate) identity: Identity,
     pub(crate) min_protocol: Option<Protocol>,

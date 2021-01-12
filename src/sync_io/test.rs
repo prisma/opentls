@@ -16,7 +16,7 @@ macro_rules! p {
 // This nested mod is needed for ios testing with rust-test-ios
 mod tests {
     use crate::{
-        sync::{TlsAcceptor, TlsConnector},
+        sync_io::{TlsAcceptor, TlsConnector},
         Certificate, Identity, Protocol,
     };
 
@@ -60,7 +60,7 @@ mod tests {
 
     #[test]
     fn server_no_root_certs() {
-        let buf = include_bytes!("../../test/identity.p12");
+        let buf = include_bytes!("../../tests/identity.p12");
         let identity = p!(Identity::from_pkcs12(buf, "mypass"));
         let builder = p!(TlsAcceptor::new(identity));
 
@@ -78,7 +78,7 @@ mod tests {
             p!(socket.write_all(b"world"));
         });
 
-        let root_ca = include_bytes!("../../test/root-ca.der");
+        let root_ca = include_bytes!("../../tests/root-ca.der");
         let root_ca = Certificate::from_der(root_ca).unwrap();
 
         let socket = p!(TcpStream::connect(("localhost", port)));
@@ -98,7 +98,7 @@ mod tests {
 
     #[test]
     fn server() {
-        let buf = include_bytes!("../../test/identity.p12");
+        let buf = include_bytes!("../../tests/identity.p12");
         let identity = p!(Identity::from_pkcs12(buf, "mypass"));
         let builder = p!(TlsAcceptor::new(identity));
 
@@ -116,7 +116,7 @@ mod tests {
             p!(socket.write_all(b"world"));
         });
 
-        let root_ca = include_bytes!("../../test/root-ca.der");
+        let root_ca = include_bytes!("../../tests/root-ca.der");
         let root_ca = Certificate::from_der(root_ca).unwrap();
 
         let socket = p!(TcpStream::connect(("localhost", port)));
@@ -134,7 +134,7 @@ mod tests {
     #[test]
     #[cfg(not(target_os = "ios"))]
     fn server_pem() {
-        let buf = include_bytes!("../../test/identity.p12");
+        let buf = include_bytes!("../../tests/identity.p12");
         let identity = p!(Identity::from_pkcs12(buf, "mypass"));
         let builder = p!(TlsAcceptor::new(identity));
 
@@ -152,7 +152,7 @@ mod tests {
             p!(socket.write_all(b"world"));
         });
 
-        let root_ca = include_bytes!("../../test/root-ca.pem");
+        let root_ca = include_bytes!("../../tests/root-ca.pem");
         let root_ca = Certificate::from_pem(root_ca).unwrap();
 
         let socket = p!(TcpStream::connect(("localhost", port)));
@@ -169,7 +169,7 @@ mod tests {
 
     #[test]
     fn peer_certificate() {
-        let buf = include_bytes!("../../test/identity.p12");
+        let buf = include_bytes!("../../tests/identity.p12");
         let identity = p!(Identity::from_pkcs12(buf, "mypass"));
         let builder = p!(TlsAcceptor::new(identity));
 
@@ -182,14 +182,14 @@ mod tests {
             assert!(socket.peer_certificate().unwrap().is_none());
         });
 
-        let root_ca = include_bytes!("../../test/root-ca.der");
+        let root_ca = include_bytes!("../../tests/root-ca.der");
         let root_ca = Certificate::from_der(root_ca).unwrap();
 
         let socket = p!(TcpStream::connect(("localhost", port)));
         let builder = p!(TlsConnector::builder().add_root_certificate(root_ca).build());
         let socket = p!(builder.connect("foobar.com", socket));
 
-        let cert_der = include_bytes!("../../test/cert.der");
+        let cert_der = include_bytes!("../../tests/cert.der");
         let cert = socket.peer_certificate().unwrap().unwrap();
         assert_eq!(cert.to_der().unwrap(), &cert_der[..]);
 
@@ -198,7 +198,7 @@ mod tests {
 
     #[test]
     fn server_tls11_only() {
-        let buf = include_bytes!("../../test/identity.p12");
+        let buf = include_bytes!("../../tests/identity.p12");
         let identity = p!(Identity::from_pkcs12(buf, "mypass"));
         let builder = p!(TlsAcceptor::builder(identity)
             .min_protocol_version(Some(Protocol::Tlsv11))
@@ -219,7 +219,7 @@ mod tests {
             p!(socket.write_all(b"world"));
         });
 
-        let root_ca = include_bytes!("../../test/root-ca.der");
+        let root_ca = include_bytes!("../../tests/root-ca.der");
         let root_ca = Certificate::from_der(root_ca).unwrap();
 
         let socket = p!(TcpStream::connect(("localhost", port)));
@@ -240,7 +240,7 @@ mod tests {
 
     #[test]
     fn server_no_shared_protocol() {
-        let buf = include_bytes!("../../test/identity.p12");
+        let buf = include_bytes!("../../tests/identity.p12");
         let identity = p!(Identity::from_pkcs12(buf, "mypass"));
         let builder = p!(TlsAcceptor::builder(identity)
             .min_protocol_version(Some(Protocol::Tlsv12))
@@ -254,7 +254,7 @@ mod tests {
             assert!(builder.accept(socket).is_err());
         });
 
-        let root_ca = include_bytes!("../../test/root-ca.der");
+        let root_ca = include_bytes!("../../tests/root-ca.der");
         let root_ca = Certificate::from_der(root_ca).unwrap();
 
         let socket = p!(TcpStream::connect(("localhost", port)));
@@ -269,7 +269,7 @@ mod tests {
 
     #[test]
     fn server_untrusted() {
-        let buf = include_bytes!("../../test/identity.p12");
+        let buf = include_bytes!("../../tests/identity.p12");
         let identity = p!(Identity::from_pkcs12(buf, "mypass"));
         let builder = p!(TlsAcceptor::new(identity));
 
@@ -292,7 +292,7 @@ mod tests {
 
     #[test]
     fn server_untrusted_unverified() {
-        let buf = include_bytes!("../../test/identity.p12");
+        let buf = include_bytes!("../../tests/identity.p12");
         let identity = p!(Identity::from_pkcs12(buf, "mypass"));
         let builder = p!(TlsAcceptor::new(identity));
 
@@ -324,14 +324,14 @@ mod tests {
 
     #[test]
     fn import_same_identity_multiple_times() {
-        let buf = include_bytes!("../../test/identity.p12");
+        let buf = include_bytes!("../../tests/identity.p12");
         let _ = p!(Identity::from_pkcs12(buf, "mypass"));
         let _ = p!(Identity::from_pkcs12(buf, "mypass"));
     }
 
     #[test]
     fn shutdown() {
-        let buf = include_bytes!("../../test/identity.p12");
+        let buf = include_bytes!("../../tests/identity.p12");
         let identity = p!(Identity::from_pkcs12(buf, "mypass"));
         let builder = p!(TlsAcceptor::new(identity));
 
@@ -350,7 +350,7 @@ mod tests {
             p!(socket.shutdown());
         });
 
-        let root_ca = include_bytes!("../../test/root-ca.der");
+        let root_ca = include_bytes!("../../tests/root-ca.der");
         let root_ca = Certificate::from_der(root_ca).unwrap();
 
         let socket = p!(TcpStream::connect(("localhost", port)));
@@ -368,7 +368,7 @@ mod tests {
     fn tls_server_end_point() {
         let expected = "4712b939fbcb42a6b5101b42139a25b14f81b418facabd378746f12f85cc6544";
 
-        let buf = include_bytes!("../../test/identity.p12");
+        let buf = include_bytes!("../../tests/identity.p12");
         let identity = p!(Identity::from_pkcs12(buf, "mypass"));
         let builder = p!(TlsAcceptor::new(identity));
 
@@ -389,7 +389,7 @@ mod tests {
             p!(socket.write_all(b"world"));
         });
 
-        let root_ca = include_bytes!("../../test/root-ca.der");
+        let root_ca = include_bytes!("../../tests/root-ca.der");
         let root_ca = Certificate::from_der(root_ca).unwrap();
 
         let socket = p!(TcpStream::connect(("localhost", port)));

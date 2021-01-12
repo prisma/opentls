@@ -1,7 +1,37 @@
+//! TLS streams using OpenSSL.
+//!
+//! This crate is meant for cases when it is important to use OpenSSL for the
+//! TLS implementation, allowing vendoring on platforms other than Linux. In
+//! many cases it is recommended to use the TLS facilities of the platform, and
+//! using either [native-tls](https://crates.io/crates/native-tls) for sync or
+//! [async-native-tls](https://crates.io/crates/async-native-tls) for async
+//! transport.
+//!
+//! If system TLS cannot be used, this crate provides the same api as the crates
+//! mentioned above, but links always with OpenSSL.
+//!
+//! # Cargo Features
+//!
+//! * `vendored` - If enabled, the crate will compile and statically link to a
+//!   vendored copy of OpenSSL.
+//! * `io-tokio` - Enables asynchronous IO with Tokio runtime.
+//! * `io-async-std` - Enables asynchronous IO with async-std runtime.
+#![cfg_attr(feature = "docs", feature(doc_cfg))]
+#![warn(missing_docs)]
+#![warn(missing_debug_implementations, rust_2018_idioms)]
+#![doc(test(attr(deny(rust_2018_idioms, warnings))))]
+#![doc(test(attr(allow(unused_extern_crates, unused_variables))))]
+
 #[macro_use]
 extern crate log;
 
-pub mod sync;
+#[cfg(all(feature = "io-tokio", feature = "io-async-std"))]
+compile_error!("only one of 'async-std' or 'async-tokio' features must be enabled");
+
+#[cfg(any(feature = "io-tokio", feature = "io-async-std"))]
+#[cfg_attr(feature = "docs", doc(cfg(any(feature = "io-tokio", feature = "io-async-std"))))]
+pub mod async_io;
+pub mod sync_io;
 
 mod certificate;
 mod error;
