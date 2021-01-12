@@ -11,7 +11,7 @@ description = """
 TLS connections with OpenSSL.
 """
 readme = "README.md"
-categories = ["asynchronous", "cryptography", "network-programming"]
+categories = ["asynchronous", "cryptography", "network-programming", "openssl"]
 
 [features]
 default = []

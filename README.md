@@ -51,6 +51,11 @@ only if you cannot rely on the libraries provided by the operating system, and
 have some special needs such as always linking to OpenSSL statically. In
 general, you probably should not use this crate.
 
+The API is taken directly from the crates mentioned above, so opentls `sync_io`
+module should be a drop-in replacement to `native-tls` and `async_io` to
+`async-native-tls` accordingly. Big thanks for the authors Steven Fackler and
+dignifiedquire.
+
 ## Installation for Rust
 
 ```sh
