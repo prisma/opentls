@@ -1,6 +1,6 @@
 [package]
 name = "opentls"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Julius de Bruijn <julius+gpg@nauk.io>"]
 edition = "2018"
 license = "MIT/Apache-2.0"
@@ -52,3 +52,6 @@ required-features = [ "io-async-std" ]
 [[test]]
 name = "smoke"
 required-features = [ "io-async-std" ]
+
+[package.metadata.docs.rs]
+features = ["io-async-std", "docs"]
