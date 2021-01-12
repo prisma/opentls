@@ -84,8 +84,25 @@ impl<S> AsyncRead for TlsStream<S>
 where
     S: AsyncRead + AsyncWrite + Unpin,
 {
+    #[cfg(feature = "io-async-std")]
     fn poll_read(mut self: Pin<&mut Self>, ctx: &mut Context<'_>, buf: &mut [u8]) -> Poll<io::Result<usize>> {
         self.with_context(ctx, |s| cvt(s.read(buf)))
+    }
+
+    #[cfg(feature = "io-tokio")]
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        ctx: &mut Context<'_>,
+        buf: &mut tokio::io::ReadBuf<'_>,
+    ) -> Poll<io::Result<()>> {
+        match self.with_context(ctx, |s| cvt(s.read(buf.initialize_unfilled()))) {
+            Poll::Ready(Ok(len)) => {
+                buf.advance(len);
+                Poll::Ready(Ok(()))
+            }
+            Poll::Ready(Err(err)) => Poll::Ready(Err(err)),
+            Poll::Pending => Poll::Pending,
+        }
     }
 }
 
