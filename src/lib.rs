@@ -49,6 +49,7 @@ pub type Result<T> = result::Result<T, Error>;
 
 /// SSL/TLS protocol versions.
 #[derive(Debug, Copy, Clone)]
+#[non_exhaustive]
 pub enum Protocol {
     /// The SSL 3.0 protocol.
     ///
@@ -63,8 +64,6 @@ pub enum Protocol {
     Tlsv11,
     /// The TLS 1.2 protocol.
     Tlsv12,
-    #[doc(hidden)]
-    __NonExhaustive,
 }
 
 #[cfg(have_min_max_version)]
@@ -81,7 +80,6 @@ fn supported_protocols(
             Protocol::Tlsv10 => SslVersion::TLS1,
             Protocol::Tlsv11 => SslVersion::TLS1_1,
             Protocol::Tlsv12 => SslVersion::TLS1_2,
-            Protocol::__NonExhaustive => unreachable!(),
         }
     }
 
@@ -115,14 +113,12 @@ fn supported_protocols(
         Some(Protocol::Tlsv12) => {
             SslOptions::NO_SSLV2 | SslOptions::NO_SSLV3 | SslOptions::NO_TLSV1 | SslOptions::NO_TLSV1_1
         }
-        Some(Protocol::__NonExhaustive) => unreachable!(),
     };
     options |= match max {
         None | Some(Protocol::Tlsv12) => SslOptions::empty(),
         Some(Protocol::Tlsv11) => SslOptions::NO_TLSV1_2,
         Some(Protocol::Tlsv10) => SslOptions::NO_TLSV1_1 | SslOptions::NO_TLSV1_2,
         Some(Protocol::Sslv3) => SslOptions::NO_TLSV1 | SslOptions::NO_TLSV1_1 | SslOptions::NO_TLSV1_2,
-        Some(Protocol::__NonExhaustive) => unreachable!(),
     };
 
     ctx.set_options(options);
