@@ -1,6 +1,6 @@
 mod builder;
 
-use std::{fmt, io, sync::Once};
+use std::{fmt, io};
 
 pub use builder::TlsConnectorBuilder;
 use openssl::ssl::{SslConnector, SslVerifyMode};
@@ -48,9 +48,6 @@ impl fmt::Debug for TlsConnector {
 impl TlsConnector {
     /// Returns a new connector with default settings.
     pub fn new() -> crate::Result<Self> {
-        static ONCE: Once = Once::new();
-        ONCE.call_once(openssl_probe::init_ssl_cert_env_vars);
-
         Self::builder().build()
     }
 
