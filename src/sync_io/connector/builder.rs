@@ -1,3 +1,5 @@
+use std::sync::Once;
+
 use openssl::{
     ssl::{SslConnector, SslMethod},
     x509::store::X509StoreBuilder,
@@ -102,6 +104,9 @@ impl TlsConnectorBuilder {
 
     /// Creates a new `TlsConnector`.
     pub fn build(&self) -> crate::Result<TlsConnector> {
+        static ONCE: Once = Once::new();
+        ONCE.call_once(openssl_probe::init_ssl_cert_env_vars);
+
         let mut connector = SslConnector::builder(SslMethod::tls())?;
 
         if let Some(ref identity) = self.identity {
